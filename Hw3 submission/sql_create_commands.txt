@@ -1,0 +1,46 @@
+CREATE TABLE Teacher
+(
+  id INT NOT NULL,
+  Last VARCHAR NOT NULL,
+  first VARCHAR NOT NULL,
+  contact_id INT NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE Class
+(
+  Code INT NOT NULL,
+  Subject VARCHAR NOT NULL,
+  room VARCHAR NOT NULL,
+  teacher_id INT NOT NULL,
+  PRIMARY KEY (Code),
+  FOREIGN KEY (teacher_id) REFERENCES Teacher(id)
+);
+
+CREATE TABLE Contact
+(
+  id INT NOT NULL,
+  email INT NOT NULL,
+  id INT NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (id) REFERENCES Teacher(id)
+);
+
+CREATE TABLE Student
+(
+  id INT NOT NULL,
+  last VARCHAR NOT NULL,
+  First VARCHAR NOT NULL,
+  contact_id INT NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (contact_id) REFERENCES Contact(id)
+);
+
+CREATE TABLE takes
+(
+  student_id INT NOT NULL,
+  class_code INT NOT NULL,
+  PRIMARY KEY (student_id, class_code),
+  FOREIGN KEY (student_id) REFERENCES Student(id),
+  FOREIGN KEY (class_code) REFERENCES Class(Code)
+);
