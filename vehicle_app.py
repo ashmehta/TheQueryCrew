@@ -22,8 +22,9 @@ class VehicleApp(QDialog):
         self.ui.radioButton.clicked.connect(self._enter_class_data)
         
         # Initialize the teacher menu and the student table.
-        self._initialize_student_menu()
-        self._initialize_table()
+        self._low_category_cars()
+        self._new_cars()
+        self._station_status_date_info()
         
     def show_results(self):
         """
@@ -31,17 +32,23 @@ class VehicleApp(QDialog):
         """
         self.ui.show()
     
-    def _initialize_student_menu(self):
+    def _low_category_cars(self):
         """
-        Initialize the student menu with student names from the database.
+        
         """
-        conn = db_connection(config_file = 'school.ini')
+        conn = db_connection(config_file = 'querycrew.ini')
         cursor = conn.cursor()
         
-        sql = """
-            SELECT first, last FROM student
-            ORDER BY last
-            """
+        sql = ( 
+        """
+        #displaying all of the cars that have low price category
+        USE querycrew_db;
+        SELECT vin, model_year, make, model, price_category
+        FROM vehicle_transformed
+        WHERE price_category = 'Low'
+        ORDER BY model_year;       
+        """
+        )
         
         cursor.execute(sql)
         rows = cursor.fetchall()
@@ -52,74 +59,124 @@ class VehicleApp(QDialog):
         # Set the menu items to the students' names.
         for row in rows:
             name = row[0] + ' ' + row[1]
-            self.ui.student_menu.addItem(name, row)  
-            
-    def _adjust_column_widths(self):
-        """
-        Adjust the column widths of the class table to fit the contents.
-        """
-        header = self.ui.class_table.horizontalHeader();
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
-        
-    def _initialize_table(self):
-        """
-        Clear the table and set the column headers.
-        """
-        self.ui.class_table.clear()
+            self.ui.Cars_Info.addItem(row)  
 
-        col = ['  Code  ', '   Subject   ']
-        self.ui.class_table.setHorizontalHeaderLabels(col)        
-        self._adjust_column_widths()
-        
-    def _enter_class_data(self):    
-        """
-        Enter class data from the query into 
-        the student and takes tables.
-        """    
-        name = self.ui.student_menu.currentData()
-        first_name = name[0]
-        last_name = name[1]
-        
-        conn = db_connection(config_file = 'school.ini')
+    def _new_cars(self):
+        conn = db_connection(config_file = 'querycrew.ini')
         cursor = conn.cursor()
         
         sql = ( 
-            f"""
-            SELECT class.code, class.subject
-            FROM student
-            JOIN takes
-              ON takes.student_id = student.id
-            JOIN class
-              ON class.code = takes.class_code
-            WHERE student.last = '{last_name}'
-              AND student.first = '{first_name}'
-            ORDER BY class.code
-            """ 
-              )    
-    
+            """
+            #This is going to give all the newer cars
+            USE querycrew_db;
+            SELECT vin, model_year, make, model, price_category
+            FROM vehicle_transformed
+            WHERE model_year > 2022
+            ORDER BY model_year;       
+            """
+        )
+        
         cursor.execute(sql)
         rows = cursor.fetchall()
-              
+            
         cursor.close()
         conn.close()
-       
-        # Set the class data into the table cells.
-        row_index = 0
+
+        # Set the menu items to the students' names.
         for row in rows:
-            column_index = 0
+            name = row[0] + ' ' + row[1]
+            self.ui.Cars_Info.addItem(row)  
+
+    def _station_status_date_info(self):
+        conn = db_connection(config_file = 'querycrew.ini')
+        cursor = conn.cursor()
+        
+        sql = ( 
+            """
+            SELECT s.station_name, vi.status AS status, vi.date AS date
+            FROM vehicle_inspection vi
+            JOIN station s on s.station_id = vi.station_id      
+            """
+        )
+        
+        cursor.execute(sql)
+        rows = cursor.fetchall()
             
-            for data in row:
-                item = QTableWidgetItem(str(data))
-                self.ui.class_table.setItem(row_index, column_index, item)
-                column_index += 1
+        cursor.close()
+        conn.close()
+
+        # Set the menu items to the students' names.
+        for row in rows:
+            name = row[0] + ' ' + row[1]
+            self.ui.Station_Info.addItem(row)  
+
     
-            row_index += 1
+    # def _adjust_column_widths(self):
+    #     """
+    #     Adjust the column widths of the class table to fit the contents.
+    #     """
+    #     header = self.ui.class_table.horizontalHeader();
+    #     header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+    #     header.setSectionResizeMode(1, QHeaderView.Stretch)
+        
+    # def _initialize_table(self):
+    #     """
+    #     Clear the table and set the column headers.
+    #     """
+    #     self.ui.class_table.clear()
+
+    #     col = ['  Code  ', '   Subject   ']
+    #     self.ui.class_table.setHorizontalHeaderLabels(col)        
+    #     self._adjust_column_widths()
+        
+    # def _enter_class_data(self):    
+    #     """
+    #     Enter class data from the query into 
+    #     the student and takes tables.
+    #     """    
+    #     name = self.ui.student_menu.currentData()
+    #     first_name = name[0]
+    #     last_name = name[1]
+        
+    #     conn = db_connection(config_file = 'school.ini')
+    #     cursor = conn.cursor()
+        
+    #     sql = ( 
+    #         f"""
+    #         SELECT class.code, class.subject
+    #         FROM student
+    #         JOIN takes
+    #           ON takes.student_id = student.id
+    #         JOIN class
+    #           ON class.code = takes.class_code
+    #         WHERE student.last = '{last_name}'
+    #           AND student.first = '{first_name}'
+    #         ORDER BY class.code
+    #         """ 
+    #           )    
+    
+    #     cursor.execute(sql)
+    #     rows = cursor.fetchall()
+              
+    #     cursor.close()
+    #     conn.close()
+       
+    #     # Set the class data into the table cells.
+    #     row_index = 0
+    #     for row in rows:
+    #         column_index = 0
+            
+    #         for data in row:
+    #             item = QTableWidgetItem(str(data))
+    #             self.ui.class_table.setItem(row_index, column_index, item)
+    #             column_index += 1
+    
+    #         row_index += 1
                
-        self._adjust_column_widths()
+    #     self._adjust_column_widths()
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    form = StudentDialog()
-    form.show_dialog()
+    form = VehicleApp()
+    form.show_results()
     sys.exit(app.exec_())        
