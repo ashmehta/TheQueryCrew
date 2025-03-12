@@ -17,6 +17,9 @@ class VehicleApp(QMainWindow):
         # Connect the "Run Query" button to the method
         self.pushButton.clicked.connect(self.run_query)
 
+        # Connect checkbox state change to query execution
+        self.station_checkBox.stateChanged.connect(self.run_query)  # Updated checkbox name
+
         # Ensure the tables are cleared at the start
         self.Cars_Info.clearContents()
         self.Station_Info.clearContents()
@@ -28,21 +31,25 @@ class VehicleApp(QMainWindow):
     def run_query(self):
         """ Determine which query to execute based on UI selection """
 
-        # Debugging print to check if the method is running
-        print("Run Query button clicked!")
+        print("Run Query button clicked!")  # Debugging print
 
         # Check which radio button or checkbox is selected
-        if self.radioButton.isChecked():
+        if self.low_price_cat.isChecked():
             print("Fetching Low Price Category Cars...")
             self._low_category_cars()
 
-        elif self.radioButton_2.isChecked():
+        elif self.brandNewCars.isChecked():
             print("Fetching New Cars...")
             self._new_cars()
 
-        elif self.checkBox.isChecked():
+        # Handle station status checkbox separately
+        if self.station_checkBox.isChecked():  # Updated checkbox name
             print("Fetching Station Status and Date...")
             self._station_status_date_info()
+        else:
+            print("Checkbox unchecked, clearing Station_Info table.")
+            self.Station_Info.clearContents()
+            self.Station_Info.setRowCount(0)
 
     def _low_category_cars(self):
         """ Fetch low category cars and update the Cars_Info table """
@@ -62,7 +69,7 @@ class VehicleApp(QMainWindow):
         cursor.close()
         conn.close()
 
-        print(f"Retrieved {len(rows)} rows for Low Price Category Cars.")  # Debugging print
+        print(f"Retrieved {len(rows)} rows for Low Price Category Cars.")
         self.update_table(rows, self.Cars_Info)
 
     def _new_cars(self):
@@ -83,7 +90,7 @@ class VehicleApp(QMainWindow):
         cursor.close()
         conn.close()
 
-        print(f"Retrieved {len(rows)} rows for New Cars.")  # Debugging print
+        print(f"Retrieved {len(rows)} rows for New Cars.")
         self.update_table(rows, self.Cars_Info)
 
     def _station_status_date_info(self):
@@ -103,7 +110,7 @@ class VehicleApp(QMainWindow):
         cursor.close()
         conn.close()
 
-        print(f"Retrieved {len(rows)} rows for Station Status and Date.")  # Debugging print
+        print(f"Retrieved {len(rows)} rows for Station Status and Date.")
         self.update_table(rows, self.Station_Info)
 
     def update_table(self, rows, table_widget):
@@ -116,7 +123,7 @@ class VehicleApp(QMainWindow):
             for col_index, data in enumerate(row):
                 table_widget.setItem(row_index, col_index, QTableWidgetItem(str(data)))  # Insert data into table
 
-        print("Table updated successfully!")  # Debugging print
+        print("Table updated successfully!")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
