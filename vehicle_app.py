@@ -1,133 +1,125 @@
 import sys
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QApplication, QTableWidgetItem, QHeaderView
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
 from connection import db_connection
 
-class VehicleApp(QDialog):
+class VehicleApp(QMainWindow):
     """
-    The student dialog
+    Vehicle Management Application
     """
-    
     def __init__(self):
-        """
-        Load the UI and initialize its components.
-        """
+        """ Load the UI and initialize its components """
         super().__init__()
-        
-        # Load the dialog components.
-        self.ui = uic.loadUi('ev_gui.ui')
 
-        # Student menu and query button event handlers.
-        # self.ui.checkBox.currentIndexChanged.connect(self._initialize_table)
-        self.ui.checkBox.currentIndexChanged.connect(self._station_status_date_info)
-        self.ui.radioButton.clicked.connect(self._low_category_cars)
-        self.ui.radioButton.clicked.connect(self._new_cars)
-        
-        # Initialize the teacher menu and the student table.
-        self._low_category_cars()
-        self._new_cars()
-        self._station_status_date_info()
-        
+        # Load the UI
+        uic.loadUi('ev_gui.ui', self)
+
+        # Connect the "Run Query" button to the method
+        self.pushButton.clicked.connect(self.run_query)
+
+        # Ensure the tables are cleared at the start
+        self.Cars_Info.clearContents()
+        self.Station_Info.clearContents()
+
     def show_results(self):
-        """
-        Show this dialog.
-        """
-        self.ui.show()
-    
+        """ Show the main window """
+        self.show()
+
+    def run_query(self):
+        """ Determine which query to execute based on UI selection """
+
+        # Debugging print to check if the method is running
+        print("Run Query button clicked!")
+
+        # Check which radio button or checkbox is selected
+        if self.radioButton.isChecked():
+            print("Fetching Low Price Category Cars...")
+            self._low_category_cars()
+
+        elif self.radioButton_2.isChecked():
+            print("Fetching New Cars...")
+            self._new_cars()
+
+        elif self.checkBox.isChecked():
+            print("Fetching Station Status and Date...")
+            self._station_status_date_info()
+
     def _low_category_cars(self):
-        """
-        
-        """
-        conn = db_connection(config_file = 'querycrew.ini')
+        """ Fetch low category cars and update the Cars_Info table """
+        conn = db_connection(config_file='querycrew.ini')
         cursor = conn.cursor()
-        
-        sql = ( 
-        """
-        #displaying all of the cars that have low price category
-        USE querycrew_db;
+
+        sql = """
         SELECT vin, model_year, make, model, price_category
         FROM vehicle_transformed
         WHERE price_category = 'Low'
-        ORDER BY model_year;       
+        ORDER BY model_year;
         """
-        )
-        
+
         cursor.execute(sql)
         rows = cursor.fetchall()
-            
+
         cursor.close()
         conn.close()
 
-        # Set the menu items to the students' names.
-        # for row in rows:
-        #     name = row[0] + ' ' + row[1]
-        #     self.ui.Cars_Info.addItem(row) 
-
-        self.Cars_Info.clear()
-        
-        for row in rows:
-            self.Cars_Info.addItem(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+        print(f"Retrieved {len(rows)} rows for Low Price Category Cars.")  # Debugging print
+        self.update_table(rows, self.Cars_Info)
 
     def _new_cars(self):
-        conn = db_connection(config_file = 'querycrew.ini')
+        """ Fetch newer cars and update the Cars_Info table """
+        conn = db_connection(config_file='querycrew.ini')
         cursor = conn.cursor()
-        
-        sql = ( 
-            """
-            #This is going to give all the newer cars
-            USE querycrew_db;
-            SELECT vin, model_year, make, model, price_category
-            FROM vehicle_transformed
-            WHERE model_year > 2022
-            ORDER BY model_year;       
-            """
-        )
-        
+
+        sql = """
+        SELECT vin, model_year, make, model, price_category
+        FROM vehicle_transformed
+        WHERE model_year > 2022
+        ORDER BY model_year;
+        """
+
         cursor.execute(sql)
         rows = cursor.fetchall()
-            
+
         cursor.close()
         conn.close()
 
-        # Set the menu items to the students' names.
-        # for row in rows:
-        #     name = row[0] + ' ' + row[1]
-        #     self.ui.Cars_Info.addItem(row)  
-        self.Cars_Info.clear()
-        
-        for row in rows:
-            self.Cars_Info.addItem(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+        print(f"Retrieved {len(rows)} rows for New Cars.")  # Debugging print
+        self.update_table(rows, self.Cars_Info)
 
     def _station_status_date_info(self):
-        conn = db_connection(config_file = 'querycrew.ini')
+        """ Fetch station status info and update the Station_Info table """
+        conn = db_connection(config_file='querycrew.ini')
         cursor = conn.cursor()
-        
-        sql = ( 
-            """
-            SELECT s.station_name, vi.status AS status, vi.date AS date
-            FROM vehicle_inspection vi
-            JOIN station s on s.station_id = vi.station_id      
-            """
-        )
-        
+
+        sql = """
+        SELECT s.station_name, vi.status, vi.date
+        FROM vehicle_inspection vi
+        JOIN station s ON s.station_id = vi.station_id;
+        """
+
         cursor.execute(sql)
         rows = cursor.fetchall()
-            
+
         cursor.close()
         conn.close()
 
-        # Set the menu items to the students' names.
-        # for row in rows:
-        #     name = row[0] + ' ' + row[1]
-        #     self.ui.Station_Info.addItem(row)  
+        print(f"Retrieved {len(rows)} rows for Station Status and Date.")  # Debugging print
+        self.update_table(rows, self.Station_Info)
 
-        self.Station_Info.clear()
-        
-        for row in rows:
-            self.Station_Info.addItem(f"{row[0]} - {row[1]} - {row[2]}")
-        
+    def update_table(self, rows, table_widget):
+        """ Update the correct QTableWidget with fetched query data """
+        table_widget.clearContents()  # Clear previous data
+        table_widget.setRowCount(len(rows))  # Set row count
+        table_widget.setColumnCount(len(rows[0]) if rows else 0)  # Set column count dynamically
+
+        for row_index, row in enumerate(rows):
+            for col_index, data in enumerate(row):
+                table_widget.setItem(row_index, col_index, QTableWidgetItem(str(data)))  # Insert data into table
+
+        print("Table updated successfully!")  # Debugging print
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     form = VehicleApp()
     form.show_results()
-    sys.exit(app.exec_())        
+    sys.exit(app.exec_())
