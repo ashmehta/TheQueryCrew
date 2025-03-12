@@ -52,7 +52,7 @@
      </property>
     </column>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="station_checkBox">
     <property name="geometry">
      <rect>
       <x>270</x>
@@ -65,7 +65,7 @@
      <string>Station Status and Date</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton">
+   <widget class="QRadioButton" name="low_price_cat">
     <property name="geometry">
      <rect>
       <x>270</x>
@@ -78,7 +78,7 @@
      <string>Low Price Category Cars</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_2">
+   <widget class="QRadioButton" name="brandNewCars">
     <property name="geometry">
      <rect>
       <x>270</x>
