@@ -1,0 +1,2 @@
+Welcome to our vehicle app! If you want to see the low price cars or new cars at our dealership, all you have to do is either select the low price cars or the new cars button and then hit "Run Query". To see the active station status at our dealership, just check the 
+last box, you do not need to hit the "Run Query" button.
